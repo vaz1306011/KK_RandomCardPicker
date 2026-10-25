@@ -16,6 +16,9 @@ namespace RandomCardPicker
         private const string FolderName = "Favorite";
         private const string StarName = "RandomCardPicker_Star";
 
+        // Tree view of each card type, seen while BrowserFolders draws it
+        private static readonly System.Collections.Generic.Dictionary<string, object> _trees = new System.Collections.Generic.Dictionary<string, object>();
+
         private static Texture2D _starOff;
         private static Texture2D _starOn;
 
@@ -42,6 +45,8 @@ namespace RandomCardPicker
             var traverse = Traverse.Create(__instance);
             var kind = KindOfRoot(traverse.Property("DefaultPath").GetValue<string>());
             if (kind == null) return;
+
+            _trees[kind] = __instance;
 
             var folder = GetFolder(kind);
             var current = traverse.Property("CurrentFolder");
@@ -120,8 +125,18 @@ namespace RandomCardPicker
             if (string.IsNullOrEmpty(file) || !File.Exists(file)) return;
 
             var folder = GetFolder(kind);
-            // The card is the Favorite copy itself, removing it is left to the game's own Delete
-            if (SubfolderPicker.Normalize(Path.GetDirectoryName(file)) == SubfolderPicker.Normalize(folder)) return;
+            // Viewing the Favorite copy itself: remove it and reload the list, which no longer has it
+            if (SubfolderPicker.Normalize(Path.GetDirectoryName(file)) == SubfolderPicker.Normalize(folder))
+            {
+                File.Delete(file);
+                SubfolderPicker.InvalidateCache();
+                SceneScan.Cancel();
+
+                object tree;
+                if (_trees.TryGetValue(kind, out tree))
+                    Traverse.Create(tree).Field("CurrentFolderChanged").GetValue<System.Action>()?.Invoke();
+                return;
+            }
 
             var target = Path.Combine(folder, Path.GetFileName(file));
             if (File.Exists(target))
