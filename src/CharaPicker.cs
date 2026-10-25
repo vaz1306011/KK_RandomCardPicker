@@ -49,15 +49,15 @@ namespace RandomCardPicker
                 () => traverse.Field("charaFileSort").GetValue<CharaFileSort>().selectPath, previewFile: preview);
         }
 
-        /// <summary>The game resets the sort to name whenever the list is rebuilt, the History folder is more useful newest first.</summary>
-        public static void SortHistoryByTime(CharaList list)
+        /// <summary>The game resets the sort to name whenever the list is rebuilt, the History and Most Used folders are only useful sorted by date.</summary>
+        public static void SortUsageByTime(CharaList list)
         {
             var sort = Traverse.Create(list).Field("charaFileSort").GetValue<CharaFileSort>();
             if (sort?.cfiList == null || sort.cfiList.Count < 2) return;
 
             var folder = SubfolderPicker.Normalize(System.IO.Path.GetDirectoryName(sort.cfiList[0].file));
             var kind = Traverse.Create(list).Field("sex").GetValue<int>() == 0 ? "male" : "female";
-            if (folder != SubfolderPicker.Normalize(History.GetFolder(kind))) return;
+            if (folder != SubfolderPicker.Normalize(History.GetFolder(kind)) && folder != SubfolderPicker.Normalize(MostUsed.GetFolder(kind))) return;
 
             const int timeSort = 1;
             sort.Sort(timeSort, false);

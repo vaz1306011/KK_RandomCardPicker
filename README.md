@@ -29,6 +29,13 @@ Koikatsu 的 CharaStudio 插件。在 [BrowserFolders](https://github.com/ManlyM
 - 在 History 裡也可以點星星加入最愛，Random 也能在裡面抽。
 - 新紀錄要重新整理清單（重開清單或按 Refresh thumbnails）才會出現。
 
+## 最常使用
+
+- 資料夾樹的 **Most Used** 節點在 History 下方，依使用次數由多到少列出卡片，次數相同的最近用過的在前。
+- 使用次數的算法與 History 相同（Load / Import / Change 各算一次），以檔名為單位，存在 `BepInEx/cache/KK_RandomCardPicker.usage.tsv`。不同資料夾裡同檔名的卡會合併計算。
+- 卡片複製到 `UserData/MostUsed/<scene|female|male>`，用修改時間表示名次，清單依日期排序時次數多的在最上面，角色清單進入時會自動切成依時間排序。
+- F1 設定 `History > Maximum most used cards per type`：每種類型最多保留幾張，預設 50，0 為不限。
+
 ## 需求
 
 - Koikatsu + BepInEx 5

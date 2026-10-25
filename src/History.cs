@@ -42,6 +42,8 @@ namespace RandomCardPicker
             {
                 RandomCardPickerPlugin.Logger.LogError(ex);
             }
+
+            MostUsed.Record(kind, file);
         }
 
         private static void Trim(string folder)

@@ -24,6 +24,7 @@ namespace RandomCardPicker
         internal static ConfigEntry<float> RandomMinDuration { get; private set; }
         internal static ConfigEntry<float> ListMinDuration { get; private set; }
         internal static ConfigEntry<int> HistoryLimit { get; private set; }
+        internal static ConfigEntry<int> MostUsedLimit { get; private set; }
 
         private void Awake()
         {
@@ -31,6 +32,10 @@ namespace RandomCardPicker
 
             HistoryLimit = Config.Bind("History", "Maximum cards per type", 50,
                 new ConfigDescription("How many recently used scene / female / male cards the History folder keeps, the oldest are deleted. Set to 0 to keep all.",
+                                      new AcceptableValueRange<int>(0, 1000)));
+
+            MostUsedLimit = Config.Bind("History", "Maximum most used cards per type", 50,
+                new ConfigDescription("How many of the most used scene / female / male cards the Most Used folder keeps. Set to 0 to keep all.",
                                       new AcceptableValueRange<int>(0, 1000)));
 
             RandomMinDuration = Config.Bind("Scene", "Random minimum duration (seconds)", 0f,
@@ -184,7 +189,7 @@ namespace RandomCardPicker
             {
                 try
                 {
-                    CharaPicker.SortHistoryByTime(__instance);
+                    CharaPicker.SortUsageByTime(__instance);
                 }
                 catch (System.Exception ex)
                 {

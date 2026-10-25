@@ -50,6 +50,7 @@ namespace RandomCardPicker
             var current = traverse.Property("CurrentFolder");
             DrawRow(current, FolderName, GetFolder(kind));
             DrawRow(current, History.FolderName, History.GetFolder(kind));
+            DrawRow(current, MostUsed.Label, MostUsed.GetFolder(kind));
         }
 
         private static void DrawRow(Traverse current, string label, string folder)
