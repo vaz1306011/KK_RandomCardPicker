@@ -187,10 +187,10 @@ namespace RandomCardPicker
             if (duration.Value <= NoTimeline) return "No timeline";
 
             var seconds = duration.Value;
-            var text = seconds.ToString("0.##", CultureInfo.InvariantCulture) + "s";
-            if (seconds < 60f) return text;
-
             var minutes = (int)(seconds / 60f);
+            if (minutes == 0) return string.Format(CultureInfo.InvariantCulture, "0:{0:00}", (int)seconds);
+
+            var text = seconds.ToString("0.##", CultureInfo.InvariantCulture) + "s";
             return string.Format(CultureInfo.InvariantCulture, "{0}:{1:00} ({2})", minutes, (int)(seconds - minutes * 60f), text);
         }
     }
