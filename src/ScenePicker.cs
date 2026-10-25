@@ -91,7 +91,7 @@ namespace RandomCardPicker
             if (read) SceneDurations.Save();
         }
 
-        private static string GetSelectedPath(Traverse traverse)
+        internal static string GetSelectedPath(Traverse traverse)
         {
             var paths = traverse.Field("listPath").GetValue<List<string>>();
             var select = traverse.Field("select").GetValue<int>();

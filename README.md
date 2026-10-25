@@ -14,6 +14,12 @@ Koikatsu 的 CharaStudio 插件。在 [BrowserFolders](https://github.com/ManlyM
 - Random 按鈕旁顯示「符合條件張數/範圍內總張數」，背景掃描中會帶 `...`。
 - 掃描結果存在 `BepInEx/cache/KK_RandomCardPicker.durations.tsv`，第一次掃描整個資料夾需要一些時間，之後只會讀新增或修改過的卡。
 
+## 最愛
+
+- 資料夾樹最上方（與 scene / female / male 同層）多一個 **Favorite** 節點，點進去就是最愛清單，Random 也能在裡面抽。
+- Random 按鈕旁的 **Fav** 按鈕，把目前選中的卡片複製到 `UserData/Favorite/<scene|female|male>`（原檔不動），成功後按鈕短暫顯示 `Added`。
+- 要移除最愛，直接刪掉 Favorite 資料夾裡的檔案即可（或在場景面板用 Delete）。
+
 ## 需求
 
 - Koikatsu + BepInEx 5

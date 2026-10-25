@@ -51,6 +51,12 @@ namespace RandomCardPicker
             // Called by the Refresh thumbnails button and when BrowserFolders notices folder changes
             harmony.PatchAll(typeof(SceneHooks));
 
+            var row = AccessTools.Method("BrowserFolders.FolderTreeView:DisplayObjectTreeHelper");
+            if (row != null)
+                harmony.Patch(row, prefix: new HarmonyMethod(typeof(Favorites), nameof(Favorites.DrawTreeRowPrefix)));
+            else
+                Logger.LogWarning("BrowserFolders.FolderTreeView.DisplayObjectTreeHelper not found, the Favorite folder will not show in the tree");
+
             var refresh = AccessTools.Method("BrowserFolders.FolderTreeView:ResetTreeCache");
             if (refresh != null)
                 harmony.Patch(refresh, postfix: new HarmonyMethod(typeof(Hooks), nameof(Hooks.RefreshPostfix)));
@@ -130,6 +136,8 @@ namespace RandomCardPicker
                         Logger.LogError(ex);
                     }
                 }
+
+                Favorites.DrawButton(instance);
 
                 if (instance.GetType().FullName == SceneFoldersType)
                     GUILayout.Label(GetCountText(instance), GUILayout.ExpandWidth(false));
