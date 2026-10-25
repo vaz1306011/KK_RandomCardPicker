@@ -32,7 +32,15 @@ namespace RandomCardPicker
                 return;
             }
 
-            new Harmony(Guid).Patch(target, postfix: new HarmonyMethod(typeof(Hooks), nameof(Hooks.DrawButtonsPostfix)));
+            var harmony = new Harmony(Guid);
+            harmony.Patch(target, postfix: new HarmonyMethod(typeof(Hooks), nameof(Hooks.DrawButtonsPostfix)));
+
+            // Scanned file lists are cached until BrowserFolders refreshes its tree
+            var refresh = AccessTools.Method("BrowserFolders.FolderTreeView:ResetTreeCache");
+            if (refresh == null)
+                Logger.LogWarning("BrowserFolders.FolderTreeView.ResetTreeCache not found, file lists will not refresh until restart");
+            else
+                harmony.Patch(refresh, postfix: new HarmonyMethod(typeof(Hooks), nameof(Hooks.ResetTreeCachePostfix)));
         }
 
         private static class Hooks
@@ -55,6 +63,11 @@ namespace RandomCardPicker
                         Logger.LogError(ex);
                     }
                 }
+            }
+
+            internal static void ResetTreeCachePostfix()
+            {
+                SubfolderPicker.ClearCache();
             }
 
             private static System.Action<object> GetPicker(object instance)

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using HarmonyLib;
@@ -14,6 +15,8 @@ namespace RandomCardPicker
     internal static class SubfolderPicker
     {
         private const int MaxTries = 30;
+
+        private static readonly Dictionary<string, List<string>> _FileCache = new Dictionary<string, List<string>>();
 
         private static string _scopeRoot;
         private static string _lastPickedFolder;
@@ -33,15 +36,16 @@ namespace RandomCardPicker
             if (current != _lastPickedFolder || !Directory.Exists(_scopeRoot)) _scopeRoot = current;
 
             var selected = string.IsNullOrEmpty(selectedFile) ? null : Normalize(selectedFile);
-            var candidates = Directory.GetFiles(_scopeRoot, "*.png", SearchOption.AllDirectories)
-                                      .Where(x => Normalize(x) != selected)
-                                      .ToList();
+            var candidates = new List<string>(GetFiles(_scopeRoot));
 
-            for (var tries = 0; tries < MaxTries && candidates.Count > 0; tries++)
+            for (var tries = 0; tries < MaxTries && candidates.Count > 0;)
             {
                 var i = UnityEngine.Random.Range(0, candidates.Count);
                 var file = candidates[i];
                 candidates.RemoveAt(i);
+
+                if (selected != null && Normalize(file) == selected) continue;
+                tries++;
 
                 var dir = Normalize(Path.GetDirectoryName(file));
                 if (dir != Normalize(folder.GetValue<string>())) folder.SetValue(dir);
@@ -53,6 +57,21 @@ namespace RandomCardPicker
                     return;
                 }
             }
+        }
+
+        /// <summary>
+        /// Forget scanned files, called when BrowserFolders refreshes (Refresh button or file changes).
+        /// </summary>
+        internal static void ClearCache()
+        {
+            _FileCache.Clear();
+        }
+
+        private static List<string> GetFiles(string root)
+        {
+            if (!_FileCache.TryGetValue(root, out var files))
+                _FileCache[root] = files = Directory.GetFiles(root, "*.png", SearchOption.AllDirectories).ToList();
+            return files;
         }
 
         internal static string Normalize(string path)
