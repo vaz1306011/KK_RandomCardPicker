@@ -48,7 +48,7 @@ namespace RandomCardPicker
                 {
                     try
                     {
-                        picker();
+                        picker(instance);
                     }
                     catch (System.Exception ex)
                     {
@@ -57,7 +57,7 @@ namespace RandomCardPicker
                 }
             }
 
-            private static System.Action GetPicker(object instance)
+            private static System.Action<object> GetPicker(object instance)
             {
                 switch (instance?.GetType().FullName)
                 {
