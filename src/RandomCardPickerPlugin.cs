@@ -163,6 +163,21 @@ namespace RandomCardPicker
 
         private static class CharaHooks
         {
+            // Hovering a name previews that card without selecting it; the game calls this again for the selected card when the mouse leaves
+            [HarmonyPostfix]
+            [HarmonyPatch(typeof(Studio.CharaList), "LoadCharaImage")]
+            internal static void LoadCharaImagePostfix(Studio.CharaList __instance, int _idx)
+            {
+                try
+                {
+                    CharaPicker.UpdateStar(__instance, _idx);
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError(ex);
+                }
+            }
+
             [HarmonyPostfix]
             [HarmonyPatch(typeof(Studio.CharaList), "InitCharaList")]
             internal static void InitCharaListPostfix(Studio.CharaList __instance)

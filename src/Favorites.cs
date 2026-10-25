@@ -70,7 +70,7 @@ namespace RandomCardPicker
         }
 
         /// <summary>Star in the top right corner of the card preview image, filled when the card is in the Favorite folder.</summary>
-        internal static void UpdateStar(RawImage image, string kind, System.Func<string> getFile, float size = 40f)
+        internal static void UpdateStar(RawImage image, string kind, System.Func<string> getFile, float size = 40f, string previewFile = null)
         {
             if (image == null) return;
 
@@ -103,7 +103,8 @@ namespace RandomCardPicker
                 star = go.transform;
             }
 
-            var file = getFile();
+            // While the mouse previews another card the star shows that card's state, a click still acts on the selected one
+            var file = previewFile ?? getFile();
             // Nothing to favorite, e.g. an empty slot on the last page
             star.gameObject.SetActive(!string.IsNullOrEmpty(file));
             SetStarTexture(star.GetComponent<RawImage>(), IsFavorite(kind, file));

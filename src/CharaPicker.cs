@@ -35,12 +35,18 @@ namespace RandomCardPicker
             });
         }
 
-        public static void UpdateStar(CharaList list)
+        public static void UpdateStar(CharaList list, int previewIndex = -1)
         {
             var traverse = Traverse.Create(list);
             var kind = traverse.Field("sex").GetValue<int>() == 0 ? "male" : "female";
+            var sort = traverse.Field("charaFileSort").GetValue<CharaFileSort>();
+
+            string preview = null;
+            if (previewIndex >= 0 && sort?.cfiList != null && previewIndex < sort.cfiList.Count)
+                preview = sort.cfiList[previewIndex].file;
+
             Favorites.UpdateStar(traverse.Field("imageChara").GetValue<RawImage>(), kind,
-                () => traverse.Field("charaFileSort").GetValue<CharaFileSort>().selectPath);
+                () => traverse.Field("charaFileSort").GetValue<CharaFileSort>().selectPath, previewFile: preview);
         }
 
         /// <summary>The game resets the sort to name whenever the list is rebuilt, the History folder is more useful newest first.</summary>
