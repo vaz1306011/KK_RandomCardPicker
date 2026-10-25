@@ -43,6 +43,24 @@ namespace RandomCardPicker
                 () => traverse.Field("charaFileSort").GetValue<CharaFileSort>().selectPath);
         }
 
+        /// <summary>The game resets the sort to name whenever the list is rebuilt, the History folder is more useful newest first.</summary>
+        public static void SortHistoryByTime(CharaList list)
+        {
+            var sort = Traverse.Create(list).Field("charaFileSort").GetValue<CharaFileSort>();
+            if (sort?.cfiList == null || sort.cfiList.Count < 2) return;
+
+            var folder = SubfolderPicker.Normalize(System.IO.Path.GetDirectoryName(sort.cfiList[0].file));
+            var kind = Traverse.Create(list).Field("sex").GetValue<int>() == 0 ? "male" : "female";
+            if (folder != SubfolderPicker.Normalize(History.GetFolder(kind))) return;
+
+            const int timeSort = 1;
+            sort.Sort(timeSort, false);
+            // Which bool means descending is not obvious from the game code, so check the result
+            var cfi = sort.cfiList;
+            if (System.IO.File.GetLastWriteTime(cfi[0].file) < System.IO.File.GetLastWriteTime(cfi[cfi.Count - 1].file))
+                sort.Sort(timeSort, true);
+        }
+
         internal static string GetSelectedPath(CharaList list)
         {
             return Traverse.Create(list).Field("charaFileSort").GetValue<CharaFileSort>().selectPath;

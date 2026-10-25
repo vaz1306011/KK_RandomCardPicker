@@ -25,6 +25,7 @@ Koikatsu 的 CharaStudio 插件。在 [BrowserFolders](https://github.com/ManlyM
 - 資料夾樹的 **History** 節點在 Favorite 下方，列出最近使用的場景或角色卡。
 - 場景按 Load / Import、角色按 Load / Change 時，會把該卡複製到 `UserData/History/<scene|female|male>` 並把修改時間設為現在，清單依日期排序時最新的在最上面（原檔不動）。重複使用同一張只會移到最前面。
 - F1 設定 `History > Maximum cards per type`：每種類型最多保留幾張，超過就刪最舊的，預設 50，0 為不限。
+- 角色清單進入 History 時會自動改成依時間排序（最新在上），場景清單本來就是。
 - 在 History 裡也可以點星星加入最愛，Random 也能在裡面抽。
 - 新紀錄要重新整理清單（重開清單或按 Refresh thumbnails）才會出現。
 

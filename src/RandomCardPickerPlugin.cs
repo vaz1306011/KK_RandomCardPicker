@@ -163,6 +163,20 @@ namespace RandomCardPicker
 
         private static class CharaHooks
         {
+            [HarmonyPostfix]
+            [HarmonyPatch(typeof(Studio.CharaList), "InitCharaList")]
+            internal static void InitCharaListPostfix(Studio.CharaList __instance)
+            {
+                try
+                {
+                    CharaPicker.SortHistoryByTime(__instance);
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError(ex);
+                }
+            }
+
             // Runs for both a normal click and the Random button, as it calls the same method
             [HarmonyPostfix]
             [HarmonyPatch(typeof(Studio.CharaList), "OnSelectChara")]
