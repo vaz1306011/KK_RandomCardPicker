@@ -166,8 +166,10 @@ namespace RandomCardPicker
                 var slot = i;
                 Favorites.UpdateStar(thumbnails[i].image, "scene", () =>
                 {
+                    // The star outlives list changes, so read the list again instead of keeping the one from creation
+                    var current = traverse.Field("listPath").GetValue<List<string>>();
                     var index = ThumbnailsPerPage * SceneLoadScene.page + slot;
-                    return thumbnails[slot].interactable && index < paths.Count ? paths[index] : null;
+                    return thumbnails[slot].interactable && current != null && index < current.Count ? current[index] : null;
                 }, 24f);
 
                 var index = ThumbnailsPerPage * SceneLoadScene.page + i;
