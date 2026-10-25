@@ -21,14 +21,19 @@ namespace RandomCardPicker
         private const string BrowserFoldersGuid = "marco.FolderBrowser";
 
         internal static new ManualLogSource Logger { get; private set; }
-        internal static ConfigEntry<float> MinSceneDuration { get; private set; }
+        internal static ConfigEntry<float> RandomMinDuration { get; private set; }
+        internal static ConfigEntry<float> ListMinDuration { get; private set; }
 
         private void Awake()
         {
             Logger = base.Logger;
 
-            MinSceneDuration = Config.Bind("Scene", "Minimum duration (seconds)", 0f,
+            RandomMinDuration = Config.Bind("Scene", "Random minimum duration (seconds)", 0f,
                 new ConfigDescription("Random only picks scene cards whose Timeline lasts at least this long. Cards without Timeline count as 0. Set to 0 to pick any scene.",
+                                      new AcceptableValueRange<float>(0f, 3600f)));
+
+            ListMinDuration = Config.Bind("Scene", "List minimum duration (seconds)", 0f,
+                new ConfigDescription("Scene cards whose Timeline is shorter than this are left out of the scene load list. Cards without Timeline count as 0. Set to 0 to list every scene. Applies when the list is refreshed (reopen the list or press Refresh thumbnails).",
                                       new AcceptableValueRange<float>(0f, 3600f)));
 
             SceneDurations.Load(System.IO.Path.Combine(Paths.CachePath, "KK_RandomCardPicker.durations.tsv"));
@@ -60,6 +65,34 @@ namespace RandomCardPicker
 
         private static class SceneHooks
         {
+            [HarmonyPostfix]
+            [HarmonyPatch(typeof(Studio.SceneLoadScene), "InitInfo")]
+            internal static void InitInfoPostfix(Studio.SceneLoadScene __instance)
+            {
+                try
+                {
+                    ScenePicker.FilterList(__instance);
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError(ex);
+                }
+            }
+
+            [HarmonyPostfix]
+            [HarmonyPatch(typeof(Studio.SceneLoadScene), "SetPage")]
+            internal static void SetPagePostfix(Studio.SceneLoadScene __instance)
+            {
+                try
+                {
+                    ScenePicker.UpdateThumbnailLabels(__instance);
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError(ex);
+                }
+            }
+
             // Runs for both a normal click and the Random button, as it calls the same method
             [HarmonyPostfix]
             [HarmonyPatch(typeof(Studio.SceneLoadScene), nameof(Studio.SceneLoadScene.OnClickThumbnail))]
