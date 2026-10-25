@@ -106,8 +106,9 @@ namespace RandomCardPicker
 
             // While the mouse previews another card the star shows that card's state, a click still acts on the selected one
             var file = previewFile ?? getFile();
-            // Nothing to favorite, e.g. an empty slot on the last page
-            star.gameObject.SetActive(!string.IsNullOrEmpty(file));
+            // Nothing to favorite, e.g. an empty slot on the last page or a list whose preview was cleared
+            var hasPreview = image.texture != null && image.color.a > 0f;
+            star.gameObject.SetActive(!string.IsNullOrEmpty(file) && hasPreview);
             SetStarTexture(star.GetComponent<RawImage>(), IsFavorite(kind, file));
         }
 

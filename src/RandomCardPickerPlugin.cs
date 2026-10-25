@@ -190,6 +190,8 @@ namespace RandomCardPicker
                 try
                 {
                     CharaPicker.SortUsageByTime(__instance);
+                    // The game clears the preview when the list is rebuilt
+                    CharaPicker.UpdateStar(__instance);
                 }
                 catch (System.Exception ex)
                 {
