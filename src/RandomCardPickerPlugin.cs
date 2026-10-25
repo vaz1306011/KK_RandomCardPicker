@@ -222,8 +222,8 @@ namespace RandomCardPicker
                 if (picker == null) return;
 
                 GUILayout.Space(1);
-                GUILayout.BeginHorizontal();
-                if (GUILayout.Button("Random"))
+                var count = instance.GetType().FullName == SceneFoldersType ? GetCountText(instance) : null;
+                if (GUILayout.Button(string.IsNullOrEmpty(count) ? "Random" : "Random  " + count))
                 {
                     try
                     {
@@ -234,10 +234,6 @@ namespace RandomCardPicker
                         Logger.LogError(ex);
                     }
                 }
-
-                if (instance.GetType().FullName == SceneFoldersType)
-                    GUILayout.Label(GetCountText(instance), GUILayout.ExpandWidth(false));
-                GUILayout.EndHorizontal();
             }
 
             internal static void RefreshPostfix()
