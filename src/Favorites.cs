@@ -16,8 +16,8 @@ namespace RandomCardPicker
         private const string FolderName = "Favorite";
         private const string StarName = "RandomCardPicker_Star";
 
-        // Tree view of each card type, seen while BrowserFolders draws it
-        private static readonly System.Collections.Generic.Dictionary<string, object> _trees = new System.Collections.Generic.Dictionary<string, object>();
+        // Favorite cards unstarred while still shown in the list
+        private static readonly System.Collections.Generic.Dictionary<string, byte[]> _removed = new System.Collections.Generic.Dictionary<string, byte[]>();
 
         private static Texture2D _starOff;
         private static Texture2D _starOn;
@@ -45,8 +45,6 @@ namespace RandomCardPicker
             var traverse = Traverse.Create(__instance);
             var kind = KindOfRoot(traverse.Property("DefaultPath").GetValue<string>());
             if (kind == null) return;
-
-            _trees[kind] = __instance;
 
             var folder = GetFolder(kind);
             var current = traverse.Property("CurrentFolder");
@@ -109,7 +107,7 @@ namespace RandomCardPicker
         {
             if (_starOff == null)
             {
-                _starOff = CreateStar(new Color(1f, 1f, 1f, 0.55f));
+                _starOff = CreateStar(new Color(0.6f, 0.6f, 0.6f, 0.9f));
                 _starOn = CreateStar(new Color(1f, 0.8f, 0.1f, 1f));
             }
             graphic.texture = favorite ? _starOn : _starOff;
@@ -125,16 +123,23 @@ namespace RandomCardPicker
             if (string.IsNullOrEmpty(file) || !File.Exists(file)) return;
 
             var folder = GetFolder(kind);
-            // Viewing the Favorite copy itself: remove it and reload the list, which no longer has it
+            // Viewing the Favorite copy itself: the card stays in the list until it is reloaded, so keep its
+            // content to bring it back if the star is pressed again
             if (SubfolderPicker.Normalize(Path.GetDirectoryName(file)) == SubfolderPicker.Normalize(folder))
             {
-                File.Delete(file);
+                if (File.Exists(file))
+                {
+                    _removed[file] = File.ReadAllBytes(file);
+                    File.Delete(file);
+                }
+                else if (_removed.TryGetValue(file, out var bytes))
+                {
+                    File.WriteAllBytes(file, bytes);
+                    _removed.Remove(file);
+                }
+
                 SubfolderPicker.InvalidateCache();
                 SceneScan.Cancel();
-
-                object tree;
-                if (_trees.TryGetValue(kind, out tree))
-                    Traverse.Create(tree).Field("CurrentFolderChanged").GetValue<System.Action>()?.Invoke();
                 return;
             }
 
