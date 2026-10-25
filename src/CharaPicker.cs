@@ -35,6 +35,14 @@ namespace RandomCardPicker
             });
         }
 
+        public static void UpdateStar(CharaList list)
+        {
+            var traverse = Traverse.Create(list);
+            var kind = traverse.Field("sex").GetValue<int>() == 0 ? "male" : "female";
+            Favorites.UpdateStar(traverse.Field("imageChara").GetValue<RawImage>(), kind,
+                () => traverse.Field("charaFileSort").GetValue<CharaFileSort>().selectPath);
+        }
+
         private static void ScrollTo(CharaFileSort sort, int index, int count)
         {
             var scroll = sort.root.GetComponentInParent<ScrollRect>();

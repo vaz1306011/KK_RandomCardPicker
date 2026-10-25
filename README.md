@@ -17,8 +17,8 @@ Koikatsu 的 CharaStudio 插件。在 [BrowserFolders](https://github.com/ManlyM
 ## 最愛
 
 - 資料夾樹最上方（與 scene / female / male 同層）多一個 **Favorite** 節點，點進去就是最愛清單，Random 也能在裡面抽。
-- Random 按鈕旁的 **Fav** 按鈕，把目前選中的卡片複製到 `UserData/Favorite/<scene|female|male>`（原檔不動），成功後按鈕短暫顯示 `Added`。
-- 要移除最愛，直接刪掉 Favorite 資料夾裡的檔案即可（或在場景面板用 Delete）。
+- 卡片預覽圖右上角的星星：點一下把目前選中的卡片複製到 `UserData/Favorite/<scene|female|male>`（原檔不動），再點一次取消；實心星星表示已在最愛。
+- 在 Favorite 資料夾裡看到的卡片，要移除請用遊戲本身的刪除功能。
 
 ## 需求
 

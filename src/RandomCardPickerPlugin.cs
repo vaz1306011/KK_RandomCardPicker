@@ -50,6 +50,7 @@ namespace RandomCardPicker
 
             // Called by the Refresh thumbnails button and when BrowserFolders notices folder changes
             harmony.PatchAll(typeof(SceneHooks));
+            harmony.PatchAll(typeof(CharaHooks));
 
             var row = AccessTools.Method("BrowserFolders.FolderTreeView:DisplayObjectTreeHelper");
             if (row != null)
@@ -107,6 +108,25 @@ namespace RandomCardPicker
                 try
                 {
                     ScenePicker.UpdateDurationLabel(__instance);
+                    ScenePicker.UpdateStar(__instance);
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError(ex);
+                }
+            }
+        }
+
+        private static class CharaHooks
+        {
+            // Runs for both a normal click and the Random button, as it calls the same method
+            [HarmonyPostfix]
+            [HarmonyPatch(typeof(Studio.CharaList), "OnSelectChara")]
+            internal static void OnSelectCharaPostfix(Studio.CharaList __instance)
+            {
+                try
+                {
+                    CharaPicker.UpdateStar(__instance);
                 }
                 catch (System.Exception ex)
                 {
@@ -136,8 +156,6 @@ namespace RandomCardPicker
                         Logger.LogError(ex);
                     }
                 }
-
-                Favorites.DrawButton(instance);
 
                 if (instance.GetType().FullName == SceneFoldersType)
                     GUILayout.Label(GetCountText(instance), GUILayout.ExpandWidth(false));
