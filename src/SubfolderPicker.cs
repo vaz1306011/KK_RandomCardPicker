@@ -16,10 +16,26 @@ namespace RandomCardPicker
     {
         private const int MaxTries = 30;
 
-        private static readonly Dictionary<string, List<string>> _FileCache = new Dictionary<string, List<string>>();
-
         private static string _scopeRoot;
         private static string _lastPickedFolder;
+
+        // Scan results per scope root, dropped whenever BrowserFolders refreshes so both stay in sync
+        private static readonly Dictionary<string, List<string>> _fileCache = new Dictionary<string, List<string>>();
+
+        internal static void InvalidateCache()
+        {
+            lock (_fileCache) _fileCache.Clear();
+        }
+
+        private static List<string> GetFiles(string root)
+        {
+            lock (_fileCache)
+            {
+                if (!_fileCache.TryGetValue(root, out var files))
+                    _fileCache[root] = files = Directory.GetFiles(root, "*.png", SearchOption.AllDirectories).ToList();
+                return files;
+            }
+        }
 
         /// <param name="browser">The BrowserFolders browser instance that owns the pressed button.</param>
         /// <param name="selectedFile">Card currently selected in the game list, never picked again.</param>
@@ -36,9 +52,11 @@ namespace RandomCardPicker
             if (current != _lastPickedFolder || !Directory.Exists(_scopeRoot)) _scopeRoot = current;
 
             var selected = string.IsNullOrEmpty(selectedFile) ? null : Normalize(selectedFile);
-            var candidates = new List<string>(GetFiles(_scopeRoot));
+            // Copy so tried files can be dropped without touching the cache
+            var candidates = GetFiles(_scopeRoot).ToList();
 
-            for (var tries = 0; tries < MaxTries && candidates.Count > 0;)
+            var tries = 0;
+            while (tries < MaxTries && candidates.Count > 0)
             {
                 var i = UnityEngine.Random.Range(0, candidates.Count);
                 var file = candidates[i];
@@ -57,21 +75,6 @@ namespace RandomCardPicker
                     return;
                 }
             }
-        }
-
-        /// <summary>
-        /// Forget scanned files, called when BrowserFolders refreshes (Refresh button or file changes).
-        /// </summary>
-        internal static void ClearCache()
-        {
-            _FileCache.Clear();
-        }
-
-        private static List<string> GetFiles(string root)
-        {
-            if (!_FileCache.TryGetValue(root, out var files))
-                _FileCache[root] = files = Directory.GetFiles(root, "*.png", SearchOption.AllDirectories).ToList();
-            return files;
         }
 
         internal static string Normalize(string path)

@@ -35,12 +35,12 @@ namespace RandomCardPicker
             var harmony = new Harmony(Guid);
             harmony.Patch(target, postfix: new HarmonyMethod(typeof(Hooks), nameof(Hooks.DrawButtonsPostfix)));
 
-            // Scanned file lists are cached until BrowserFolders refreshes its tree
+            // Called by the Refresh thumbnails button and when BrowserFolders notices folder changes
             var refresh = AccessTools.Method("BrowserFolders.FolderTreeView:ResetTreeCache");
-            if (refresh == null)
-                Logger.LogWarning("BrowserFolders.FolderTreeView.ResetTreeCache not found, file lists will not refresh until restart");
+            if (refresh != null)
+                harmony.Patch(refresh, postfix: new HarmonyMethod(typeof(Hooks), nameof(Hooks.RefreshPostfix)));
             else
-                harmony.Patch(refresh, postfix: new HarmonyMethod(typeof(Hooks), nameof(Hooks.ResetTreeCachePostfix)));
+                Logger.LogWarning("BrowserFolders.FolderTreeView.ResetTreeCache not found, the card list will not refresh with BrowserFolders");
         }
 
         private static class Hooks
@@ -65,9 +65,9 @@ namespace RandomCardPicker
                 }
             }
 
-            internal static void ResetTreeCachePostfix()
+            internal static void RefreshPostfix()
             {
-                SubfolderPicker.ClearCache();
+                SubfolderPicker.InvalidateCache();
             }
 
             private static System.Action<object> GetPicker(object instance)
