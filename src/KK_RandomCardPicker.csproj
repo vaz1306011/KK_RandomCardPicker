@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net35</TargetFramework>
+    <AssemblyName>KK_RandomCardPicker</AssemblyName>
+    <RootNamespace>RandomCardPicker</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <DebugType>embedded</DebugType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!-- 遊戲安裝目錄，編譯時從這裡引用 DLL；設定環境變數 KK_GAME_DIR，或用 dotnet build -p:GameDir=... -->
+    <GameDir Condition="'$(GameDir)' == ''">$(KK_GAME_DIR)</GameDir>
+    <Managed>$(GameDir)\CharaStudio_Data\Managed</Managed>
+    <Managed Condition="!Exists('$(Managed)')">$(GameDir)\Koikatu_Data\Managed</Managed>
+  </PropertyGroup>
+
+  <Target Name="CheckGameDir" BeforeTargets="ResolveAssemblyReferences;CoreCompile" Condition="'$(GameDir)' == '' Or !Exists('$(GameDir)')">
+    <Error Text="找不到遊戲目錄，請設定環境變數 KK_GAME_DIR 或加上 -p:GameDir=遊戲路徑（目前: '$(GameDir)'）" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net35" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp" HintPath="$(Managed)\Assembly-CSharp.dll" Private="false" />
+    <Reference Include="Assembly-CSharp-firstpass" HintPath="$(Managed)\Assembly-CSharp-firstpass.dll" Private="false" />
+    <Reference Include="UnityEngine" HintPath="$(Managed)\UnityEngine.dll" Private="false" />
+    <Reference Include="UnityEngine.UI" HintPath="$(Managed)\UnityEngine.UI.dll" Private="false" />
+    <Reference Include="BepInEx" HintPath="$(GameDir)\BepInEx\core\BepInEx.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(GameDir)\BepInEx\core\0Harmony.dll" Private="false" />
+  </ItemGroup>
+
+</Project>
