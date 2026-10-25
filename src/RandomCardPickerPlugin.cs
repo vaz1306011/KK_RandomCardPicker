@@ -23,10 +23,15 @@ namespace RandomCardPicker
         internal static new ManualLogSource Logger { get; private set; }
         internal static ConfigEntry<float> RandomMinDuration { get; private set; }
         internal static ConfigEntry<float> ListMinDuration { get; private set; }
+        internal static ConfigEntry<int> HistoryLimit { get; private set; }
 
         private void Awake()
         {
             Logger = base.Logger;
+
+            HistoryLimit = Config.Bind("History", "Maximum cards per type", 50,
+                new ConfigDescription("How many recently used scene / female / male cards the History folder keeps, the oldest are deleted. Set to 0 to keep all.",
+                                      new AcceptableValueRange<int>(0, 1000)));
 
             RandomMinDuration = Config.Bind("Scene", "Random minimum duration (seconds)", 0f,
                 new ConfigDescription("Random only picks scene cards whose Timeline lasts at least this long. Cards without Timeline count as 0. Set to 0 to pick any scene.",
@@ -51,6 +56,8 @@ namespace RandomCardPicker
             // Called by the Refresh thumbnails button and when BrowserFolders notices folder changes
             harmony.PatchAll(typeof(SceneHooks));
             harmony.PatchAll(typeof(CharaHooks));
+            harmony.PatchAll(typeof(SceneUseHooks));
+            harmony.PatchAll(typeof(CharaUseHooks));
 
             var row = AccessTools.Method("BrowserFolders.FolderTreeView:DisplayObjectTreeHelper");
             if (row != null)
@@ -114,6 +121,43 @@ namespace RandomCardPicker
                 {
                     Logger.LogError(ex);
                 }
+            }
+        }
+
+        private static class SceneUseHooks
+        {
+            // Prefix: the selection is still there, the game may clear it once the scene is loaded
+            [HarmonyPrefix]
+            [HarmonyPatch(typeof(Studio.SceneLoadScene), "LoadScene")]
+            internal static void LoadScenePrefix(string _path)
+            {
+                History.Record("scene", _path);
+            }
+
+            [HarmonyPrefix]
+            [HarmonyPatch(typeof(Studio.SceneLoadScene), "OnClickImport")]
+            internal static void OnClickImportPrefix(Studio.SceneLoadScene __instance)
+            {
+                History.Record("scene", ScenePicker.GetSelectedPath(Traverse.Create(__instance)));
+            }
+        }
+
+        private static class CharaUseHooks
+        {
+            [HarmonyPrefix]
+            [HarmonyPatch(typeof(Studio.CharaList), "LoadCharaFemale")]
+            [HarmonyPatch(typeof(Studio.CharaList), "ChangeCharaFemale")]
+            internal static void FemalePrefix(Studio.CharaList __instance)
+            {
+                History.Record("female", CharaPicker.GetSelectedPath(__instance));
+            }
+
+            [HarmonyPrefix]
+            [HarmonyPatch(typeof(Studio.CharaList), "LoadCharaMale")]
+            [HarmonyPatch(typeof(Studio.CharaList), "ChangeCharaMale")]
+            internal static void MalePrefix(Studio.CharaList __instance)
+            {
+                History.Record("male", CharaPicker.GetSelectedPath(__instance));
             }
         }
 

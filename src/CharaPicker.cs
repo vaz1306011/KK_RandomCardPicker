@@ -43,6 +43,11 @@ namespace RandomCardPicker
                 () => traverse.Field("charaFileSort").GetValue<CharaFileSort>().selectPath);
         }
 
+        internal static string GetSelectedPath(CharaList list)
+        {
+            return Traverse.Create(list).Field("charaFileSort").GetValue<CharaFileSort>().selectPath;
+        }
+
         private static void ScrollTo(CharaFileSort sort, int index, int count)
         {
             var scroll = sort.root.GetComponentInParent<ScrollRect>();

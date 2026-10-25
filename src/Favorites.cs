@@ -7,7 +7,8 @@ using UnityEngine.UI;
 namespace RandomCardPicker
 {
     /// <summary>
-    /// A "Favorite" entry above the top folder of the BrowserFolders tree (same level as scene / female / male).
+    /// A "Favorite" entry above the top folder of the BrowserFolders tree (same level as scene / female / male),
+    /// followed by the History entry.
     /// It is a real folder under UserData/Favorite that holds copies of the favorited cards, so the game lists it
     /// like any other folder and Random works inside it. Cards are added with a star on their preview image.
     /// </summary>
@@ -46,15 +47,20 @@ namespace RandomCardPicker
             var kind = KindOfRoot(traverse.Property("DefaultPath").GetValue<string>());
             if (kind == null) return;
 
-            var folder = GetFolder(kind);
             var current = traverse.Property("CurrentFolder");
+            DrawRow(current, FolderName, GetFolder(kind));
+            DrawRow(current, History.FolderName, History.GetFolder(kind));
+        }
+
+        private static void DrawRow(Traverse current, string label, string folder)
+        {
             var selected = SubfolderPicker.Normalize(current.GetValue<string>() ?? string.Empty) == SubfolderPicker.Normalize(folder);
 
             var color = GUI.color;
             if (selected) GUI.color = Color.cyan;
             GUILayout.BeginHorizontal();
             GUILayout.Space(20f);
-            if (GUILayout.Button(FolderName, GUI.skin.label, GUILayout.ExpandWidth(true), GUILayout.MinWidth(100f)))
+            if (GUILayout.Button(label, GUI.skin.label, GUILayout.ExpandWidth(true), GUILayout.MinWidth(100f)))
             {
                 Directory.CreateDirectory(folder);
                 current.SetValue(folder);

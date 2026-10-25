@@ -20,6 +20,14 @@ Koikatsu 的 CharaStudio 插件。在 [BrowserFolders](https://github.com/ManlyM
 - 卡片預覽圖右上角的星星：點一下把目前選中的卡片複製到 `UserData/Favorite/<scene|female|male>`（原檔不動），再點一次取消；實心星星表示已在最愛。
 - 在 Favorite 資料夾裡點星星會刪除那份副本，星星變灰但卡片留在清單，再點一次可還原，下次重新載入清單才會消失。
 
+## 歷史
+
+- 資料夾樹的 **History** 節點在 Favorite 下方，列出最近使用的場景或角色卡。
+- 場景按 Load / Import、角色按 Load / Change 時，會把該卡複製到 `UserData/History/<scene|female|male>` 並把修改時間設為現在，清單依日期排序時最新的在最上面（原檔不動）。重複使用同一張只會移到最前面。
+- F1 設定 `History > Maximum cards per type`：每種類型最多保留幾張，超過就刪最舊的，預設 50，0 為不限。
+- 在 History 裡也可以點星星加入最愛，Random 也能在裡面抽。
+- 新紀錄要重新整理清單（重開清單或按 Refresh thumbnails）才會出現。
+
 ## 需求
 
 - Koikatsu + BepInEx 5
