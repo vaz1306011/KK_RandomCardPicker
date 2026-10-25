@@ -1,4 +1,5 @@
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
@@ -20,10 +21,17 @@ namespace RandomCardPicker
         private const string BrowserFoldersGuid = "marco.FolderBrowser";
 
         internal static new ManualLogSource Logger { get; private set; }
+        internal static ConfigEntry<float> MinSceneDuration { get; private set; }
 
         private void Awake()
         {
             Logger = base.Logger;
+
+            MinSceneDuration = Config.Bind("Scene", "Minimum duration (seconds)", 0f,
+                new ConfigDescription("Random only picks scene cards whose Timeline lasts at least this long. Cards without Timeline count as 0. Set to 0 to pick any scene.",
+                                      new AcceptableValueRange<float>(0f, 3600f)));
+
+            SceneDurations.Load(System.IO.Path.Combine(Paths.CachePath, "KK_RandomCardPicker.durations.tsv"));
 
             var target = AccessTools.Method("BrowserFolders.BaseFolderBrowser:DrawBaseControlButtons");
             if (target == null)
@@ -36,11 +44,36 @@ namespace RandomCardPicker
             harmony.Patch(target, postfix: new HarmonyMethod(typeof(Hooks), nameof(Hooks.DrawButtonsPostfix)));
 
             // Called by the Refresh thumbnails button and when BrowserFolders notices folder changes
+            harmony.PatchAll(typeof(SceneHooks));
+
             var refresh = AccessTools.Method("BrowserFolders.FolderTreeView:ResetTreeCache");
             if (refresh != null)
                 harmony.Patch(refresh, postfix: new HarmonyMethod(typeof(Hooks), nameof(Hooks.RefreshPostfix)));
             else
                 Logger.LogWarning("BrowserFolders.FolderTreeView.ResetTreeCache not found, the card list will not refresh with BrowserFolders");
+        }
+
+        private void OnApplicationQuit()
+        {
+            SceneDurations.Save();
+        }
+
+        private static class SceneHooks
+        {
+            // Runs for both a normal click and the Random button, as it calls the same method
+            [HarmonyPostfix]
+            [HarmonyPatch(typeof(Studio.SceneLoadScene), nameof(Studio.SceneLoadScene.OnClickThumbnail))]
+            internal static void OnClickThumbnailPostfix(Studio.SceneLoadScene __instance)
+            {
+                try
+                {
+                    ScenePicker.UpdateDurationLabel(__instance);
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError(ex);
+                }
+            }
         }
 
         private static class Hooks
@@ -52,6 +85,7 @@ namespace RandomCardPicker
                 if (picker == null) return;
 
                 GUILayout.Space(1);
+                GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Random"))
                 {
                     try
@@ -63,11 +97,31 @@ namespace RandomCardPicker
                         Logger.LogError(ex);
                     }
                 }
+
+                if (instance.GetType().FullName == SceneFoldersType)
+                    GUILayout.Label(GetCountText(instance), GUILayout.ExpandWidth(false));
+                GUILayout.EndHorizontal();
             }
 
             internal static void RefreshPostfix()
             {
                 SubfolderPicker.InvalidateCache();
+                SceneScan.Cancel();
+            }
+
+            private const string SceneFoldersType = "BrowserFolders.Studio.SceneFolders";
+
+            private static string GetCountText(object instance)
+            {
+                try
+                {
+                    return ScenePicker.GetCountText(instance);
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError(ex);
+                    return string.Empty;
+                }
             }
 
             private static System.Action<object> GetPicker(object instance)
@@ -75,7 +129,7 @@ namespace RandomCardPicker
                 switch (instance?.GetType().FullName)
                 {
                     case "BrowserFolders.Studio.StudioCharaFolders": return CharaPicker.PickRandom;
-                    case "BrowserFolders.Studio.SceneFolders": return ScenePicker.PickRandom;
+                    case SceneFoldersType: return ScenePicker.PickRandom;
                     default: return null;
                 }
             }

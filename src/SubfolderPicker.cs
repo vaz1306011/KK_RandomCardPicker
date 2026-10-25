@@ -37,23 +37,35 @@ namespace RandomCardPicker
             }
         }
 
+        /// <summary>
+        /// Folder the next Random press picks from: the folder selected in BrowserFolders, or while the user keeps
+        /// pressing Random the one they originally selected.
+        /// </summary>
+        public static string GetScopeRoot(object browser)
+        {
+            var treeView = Traverse.Create(browser).Property("TreeView").GetValue();
+            if (treeView == null) return null;
+
+            var current = Normalize(Traverse.Create(treeView).Property("CurrentFolder").GetValue<string>());
+            // Pressing Random again keeps the original scope, only a folder change by the user starts a new one
+            if (current != _lastPickedFolder || !Directory.Exists(_scopeRoot)) _scopeRoot = current;
+            return _scopeRoot;
+        }
+
         /// <param name="browser">The BrowserFolders browser instance that owns the pressed button.</param>
         /// <param name="selectedFile">Card currently selected in the game list, never picked again.</param>
         /// <param name="tryShow">Selects the file in the (refreshed) game list, returns false if it is not in it.</param>
-        public static void Pick(object browser, string selectedFile, Func<string, bool> tryShow)
+        /// <param name="accept">Optional filter, files it rejects are skipped without counting as a try.</param>
+        public static void Pick(object browser, string selectedFile, Func<string, bool> tryShow, Func<string, bool> accept = null)
         {
-            var treeView = Traverse.Create(browser).Property("TreeView").GetValue();
-            if (treeView == null) return;
+            var scopeRoot = GetScopeRoot(browser);
+            if (scopeRoot == null) return;
 
-            var folder = Traverse.Create(treeView).Property("CurrentFolder");
-            var current = Normalize(folder.GetValue<string>());
-
-            // Pressing Random again keeps the original scope, only a folder change by the user starts a new one
-            if (current != _lastPickedFolder || !Directory.Exists(_scopeRoot)) _scopeRoot = current;
+            var folder = Traverse.Create(Traverse.Create(browser).Property("TreeView").GetValue()).Property("CurrentFolder");
 
             var selected = string.IsNullOrEmpty(selectedFile) ? null : Normalize(selectedFile);
             // Copy so tried files can be dropped without touching the cache
-            var candidates = GetFiles(_scopeRoot).ToList();
+            var candidates = GetFiles(scopeRoot).ToList();
 
             var tries = 0;
             while (tries < MaxTries && candidates.Count > 0)
@@ -63,6 +75,7 @@ namespace RandomCardPicker
                 candidates.RemoveAt(i);
 
                 if (selected != null && Normalize(file) == selected) continue;
+                if (accept != null && !accept(file)) continue;
                 tries++;
 
                 var dir = Normalize(Path.GetDirectoryName(file));
