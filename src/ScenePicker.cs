@@ -163,6 +163,13 @@ namespace RandomCardPicker
             {
                 var label = GetOrCreateLabel(thumbnails[i].image, 15);
 
+                var slot = i;
+                Favorites.UpdateStar(thumbnails[i].image, "scene", () =>
+                {
+                    var index = ThumbnailsPerPage * SceneLoadScene.page + slot;
+                    return thumbnails[slot].interactable && index < paths.Count ? paths[index] : null;
+                }, 24f);
+
                 var index = ThumbnailsPerPage * SceneLoadScene.page + i;
                 if (!thumbnails[i].interactable || index >= paths.Count)
                 {
