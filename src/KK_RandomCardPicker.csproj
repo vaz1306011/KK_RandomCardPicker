@@ -1,5 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- 本機的遊戲目錄設定（不進版控），內容見 GameDir.props.example -->
+  <Import Project="GameDir.props" Condition="Exists('GameDir.props')" />
+
   <PropertyGroup>
     <TargetFramework>net35</TargetFramework>
     <AssemblyName>KK_RandomCardPicker</AssemblyName>
@@ -7,14 +10,14 @@
     <LangVersion>latest</LangVersion>
     <DebugType>embedded</DebugType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <!-- 遊戲安裝目錄，編譯時從這裡引用 DLL；設定環境變數 KK_GAME_DIR，或用 dotnet build -p:GameDir=... -->
+    <!-- 遊戲安裝目錄，編譯時從這裡引用 DLL；建立 GameDir.props、設定環境變數 KK_GAME_DIR，或用 dotnet build -p:GameDir=... -->
     <GameDir Condition="'$(GameDir)' == ''">$(KK_GAME_DIR)</GameDir>
     <Managed>$(GameDir)\CharaStudio_Data\Managed</Managed>
     <Managed Condition="!Exists('$(Managed)')">$(GameDir)\Koikatu_Data\Managed</Managed>
   </PropertyGroup>
 
   <Target Name="CheckGameDir" BeforeTargets="ResolveAssemblyReferences;CoreCompile" Condition="'$(GameDir)' == '' Or !Exists('$(GameDir)')">
-    <Error Text="找不到遊戲目錄，請設定環境變數 KK_GAME_DIR 或加上 -p:GameDir=遊戲路徑（目前: '$(GameDir)'）" />
+    <Error Text="找不到遊戲目錄，請建立 src\GameDir.props、設定環境變數 KK_GAME_DIR 或加上 -p:GameDir=遊戲路徑（目前: '$(GameDir)'）" />
   </Target>
 
   <ItemGroup>

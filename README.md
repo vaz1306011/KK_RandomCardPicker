@@ -43,7 +43,7 @@ Koikatsu 的 CharaStudio 插件。在 [BrowserFolders](https://github.com/ManlyM
 
 ## 編譯
 
-編譯時需要遊戲目錄來引用 DLL，請設定環境變數 `KK_GAME_DIR`，或用 `-p:GameDir=` 指定：
+編譯時需要遊戲目錄來引用 DLL，把 `src/GameDir.props.example` 複製成 `src/GameDir.props` 並改成自己的遊戲路徑（不進版控）。也可以設定環境變數 `KK_GAME_DIR`，或用 `-p:GameDir=` 指定：
 
 ```
 dotnet build src -c Release -p:GameDir="D:\Koikatsu"
