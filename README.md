@@ -41,6 +41,7 @@ Koikatsu 的 CharaStudio 插件。在 [BrowserFolders](https://github.com/ManlyM
 - 快捷鍵（預設 `Ctrl+Shift+F`）選取目前場景中的女性角色，同名的角色會一起選取。
 - 場景裡有多個不同名字的女角時，再按一次快捷鍵切到下一個名字，按完最後一個會回到第一個。
 - F1 設定 `Hotkeys > Select female characters` 可更改快捷鍵。
+- 選取後 workspace 會自動展開角色所在的上層物件，並捲動到該角色。
 
 ## 需求
 

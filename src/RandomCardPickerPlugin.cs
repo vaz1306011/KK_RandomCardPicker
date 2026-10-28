@@ -83,6 +83,15 @@ namespace RandomCardPicker
 
         private void Update()
         {
+            try
+            {
+                FemaleSelector.Update();
+            }
+            catch (System.Exception ex)
+            {
+                Logger.LogError(ex);
+            }
+
             if (!SelectFemaleKey.Value.IsDown()) return;
 
             try
