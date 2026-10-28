@@ -91,6 +91,7 @@ namespace RandomCardPicker
                 {
                     _lastPickedFolder = dir;
                     Remember(historyKey, file);
+                    ScrollTreeToFolder(browser);
                     return;
                 }
             }
@@ -116,6 +117,7 @@ namespace RandomCardPicker
                 if (tryShow(file))
                 {
                     _lastPickedFolder = dir;
+                    ScrollTreeToFolder(browser);
                     return;
                 }
             }
@@ -128,6 +130,19 @@ namespace RandomCardPicker
 
             picks.Add(file);
             if (picks.Count > MaxHistory) picks.RemoveAt(0);
+        }
+
+        /// <summary>The tree expands to the current folder on its own, this also scrolls it into view.</summary>
+        private static void ScrollTreeToFolder(object browser)
+        {
+            var treeView = Traverse.Create(browser).Property("TreeView");
+            var tree = treeView.GetValue();
+            var current = treeView.Property("CurrentFolder").GetValue<string>();
+            var root = treeView.Property("DefaultPath").GetValue<string>();
+            // Favorite / History / Most Used are drawn as separate rows, there is no tree node to scroll to
+            if (tree == null || string.IsNullOrEmpty(current) || string.IsNullOrEmpty(root) || !Normalize(current).StartsWith(Normalize(root))) return;
+
+            Traverse.Create(tree).Method("ScrollListToSelected").GetValue();
         }
 
         private static Traverse GetFolderProperty(object browser)
