@@ -17,7 +17,7 @@ namespace RandomCardPicker
     public class RandomCardPickerPlugin : BaseUnityPlugin
     {
         public const string Guid = "vaz1306011.KK_RandomCardPicker";
-        public const string Version = "0.1.0";
+        public const string Version = "1.1.0";
         private const string BrowserFoldersGuid = "marco.FolderBrowser";
 
         internal static new ManualLogSource Logger { get; private set; }
