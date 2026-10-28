@@ -83,6 +83,19 @@ namespace RandomCardPicker
                 Logger.LogWarning("BrowserFolders.FolderTreeView.ResetTreeCache not found, the card list will not refresh with BrowserFolders");
         }
 
+        private void LateUpdate()
+        {
+            try
+            {
+                ScenePicker.ApplyRestoredPage();
+            }
+            catch (System.Exception ex)
+            {
+                Logger.LogError(ex);
+                ScenePicker.CancelRestoredPage();
+            }
+        }
+
         private void Update()
         {
             try
@@ -120,6 +133,7 @@ namespace RandomCardPicker
                 try
                 {
                     ScenePicker.FilterList(__instance);
+                    ScenePicker.RestoreLeftPage(__instance);
                 }
                 catch (System.Exception ex)
                 {

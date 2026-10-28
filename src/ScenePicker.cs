@@ -83,6 +83,53 @@ namespace RandomCardPicker
             scene.OnClickThumbnail(index % ThumbnailsPerPage);
         }
 
+        private static SceneLoadScene _pageRestoredFor;
+
+        /// <summary>
+        /// The load window is a new SceneLoadScene every time it opens, and Studio Scene Navigation then moves it to the page
+        /// of the last loaded scene. Puts it back on the page it was left on, which the game keeps in a static field.
+        /// </summary>
+        public static void RestoreLeftPage(SceneLoadScene scene)
+        {
+            // Later list rebuilds of the same window are folder changes, those keep the other plugin's page
+            if (_pageRestoredFor == scene) return;
+            _pageRestoredFor = scene;
+
+            var page = SceneLoadScene.page;
+            if (page <= 0) return;
+
+            _restoreScene = scene;
+            _restorePage = page;
+            _restoreUntilFrame = Time.frameCount + 2;
+        }
+
+        private static SceneLoadScene _restoreScene;
+        private static int _restorePage;
+        private static int _restoreUntilFrame;
+
+        public static void CancelRestoredPage()
+        {
+            _restoreScene = null;
+        }
+
+        /// <summary>
+        /// Runs in LateUpdate, after the other plugin has moved the page in the same frame, so the wrong page is never drawn.
+        /// </summary>
+        public static void ApplyRestoredPage()
+        {
+            if (_restoreScene == null) return;
+
+            var scene = _restoreScene;
+            if (Time.frameCount > _restoreUntilFrame)
+            {
+                _restoreScene = null;
+                return;
+            }
+
+            if (SceneLoadScene.page == _restorePage) return;
+            Traverse.Create(scene).Method("SetPage", new[] { typeof(int) }, new object[] { _restorePage }).GetValue();
+        }
+
         /// <summary>Cards shorter than the list minimum are not in the list, so they can't be picked either.</summary>
         private static float GetMinDuration()
         {
