@@ -25,6 +25,7 @@ namespace RandomCardPicker
         internal static ConfigEntry<float> ListMinDuration { get; private set; }
         internal static ConfigEntry<int> HistoryLimit { get; private set; }
         internal static ConfigEntry<int> MostUsedLimit { get; private set; }
+        internal static ConfigEntry<KeyboardShortcut> SelectFemaleKey { get; private set; }
 
         private void Awake()
         {
@@ -45,6 +46,9 @@ namespace RandomCardPicker
             ListMinDuration = Config.Bind("Scene", "List minimum duration (seconds)", 0f,
                 new ConfigDescription("Scene cards whose Timeline is shorter than this are left out of the scene load list. Cards without Timeline count as 0. Set to 0 to list every scene. Applies when the list is refreshed (reopen the list or press Refresh thumbnails).",
                                       new AcceptableValueRange<float>(0f, 3600f)));
+
+            SelectFemaleKey = Config.Bind("Hotkeys", "Select female characters", new KeyboardShortcut(KeyCode.F, KeyCode.LeftControl, KeyCode.LeftShift),
+                "Selects the female characters in the scene that share a name. Press again to move on to the next name.");
 
             SceneDurations.Load(System.IO.Path.Combine(Paths.CachePath, "KK_RandomCardPicker.durations.tsv"));
 
@@ -75,6 +79,20 @@ namespace RandomCardPicker
                 harmony.Patch(refresh, postfix: new HarmonyMethod(typeof(Hooks), nameof(Hooks.RefreshPostfix)));
             else
                 Logger.LogWarning("BrowserFolders.FolderTreeView.ResetTreeCache not found, the card list will not refresh with BrowserFolders");
+        }
+
+        private void Update()
+        {
+            if (!SelectFemaleKey.Value.IsDown()) return;
+
+            try
+            {
+                FemaleSelector.SelectNext();
+            }
+            catch (System.Exception ex)
+            {
+                Logger.LogError(ex);
+            }
         }
 
         private void OnApplicationQuit()

@@ -36,6 +36,12 @@ Koikatsu 的 CharaStudio 插件。在 [BrowserFolders](https://github.com/ManlyM
 - 卡片複製到 `UserData/MostUsed/<scene|female|male>`，用修改時間表示名次，清單依日期排序時次數多的在最上面，角色清單進入時會自動切成依時間排序。
 - F1 設定 `History > Maximum most used cards per type`：每種類型最多保留幾張，預設 50，0 為不限。
 
+## 選取女角
+
+- 快捷鍵（預設 `Ctrl+Shift+F`）選取目前場景中的女性角色，同名的角色會一起選取。
+- 場景裡有多個不同名字的女角時，再按一次快捷鍵切到下一個名字，按完最後一個會回到第一個。
+- F1 設定 `Hotkeys > Select female characters` 可更改快捷鍵。
+
 ## 需求
 
 - Koikatsu + BepInEx 5
