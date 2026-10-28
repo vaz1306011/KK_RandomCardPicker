@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using HarmonyLib;
 using Studio;
@@ -32,6 +33,8 @@ namespace RandomCardPicker
                 // Same as the user switching page and clicking the thumbnail: opens the Load / Import / Delete panel
                 traverse.Method("SetPage", new[] { typeof(int) }, new object[] { index / ThumbnailsPerPage }).GetValue();
                 scene.OnClickThumbnail(index % ThumbnailsPerPage);
+
+                RandomCardPickerPlugin.Instance.StartCoroutine(KeepPage(scene, index));
                 return true;
             };
 
@@ -59,6 +62,25 @@ namespace RandomCardPicker
             SubfolderPicker.Pick(browser, HistoryKey, GetSelectedPath(traverse), tryShow, accept);
 
             SceneDurations.Save();
+        }
+
+        /// <summary>
+        /// Plugins such as Studio Scene Navigation jump the list back to the page of the last loaded scene a frame after
+        /// the list is rebuilt, which is after the pick, so the page is checked again once they are done.
+        /// </summary>
+        private static IEnumerator KeepPage(SceneLoadScene scene, int index)
+        {
+            yield return null;
+            yield return null;
+
+            if (scene == null) yield break;
+
+            var page = index / ThumbnailsPerPage;
+            if (SceneLoadScene.page == page) yield break;
+
+            var traverse = Traverse.Create(scene);
+            traverse.Method("SetPage", new[] { typeof(int) }, new object[] { page }).GetValue();
+            scene.OnClickThumbnail(index % ThumbnailsPerPage);
         }
 
         /// <summary>Cards shorter than the list minimum are not in the list, so they can't be picked either.</summary>

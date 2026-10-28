@@ -21,6 +21,7 @@ namespace RandomCardPicker
         private const string BrowserFoldersGuid = "marco.FolderBrowser";
 
         internal static new ManualLogSource Logger { get; private set; }
+        internal static RandomCardPickerPlugin Instance { get; private set; }
         internal static ConfigEntry<float> RandomMinDuration { get; private set; }
         internal static ConfigEntry<float> ListMinDuration { get; private set; }
         internal static ConfigEntry<int> HistoryLimit { get; private set; }
@@ -30,6 +31,7 @@ namespace RandomCardPicker
         private void Awake()
         {
             Logger = base.Logger;
+            Instance = this;
 
             HistoryLimit = Config.Bind("History", "Maximum cards per type", 50,
                 new ConfigDescription("How many recently used scene / female / male cards the History folder keeps, the oldest are deleted. Set to 0 to keep all.",
