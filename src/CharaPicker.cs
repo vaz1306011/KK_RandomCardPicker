@@ -8,7 +8,7 @@ namespace RandomCardPicker
 {
     internal static class CharaPicker
     {
-        public static void PickRandom(object browser)
+        public static void PickRandom(object browser, bool back)
         {
             // Male and female lists both exist, only the one on screen is visible
             var list = Object.FindObjectsOfType<CharaList>().FirstOrDefault(x => x.isActiveAndEnabled && x.isInit);
@@ -16,8 +16,9 @@ namespace RandomCardPicker
 
             var traverse = Traverse.Create(list);
             var sort = traverse.Field("charaFileSort").GetValue<CharaFileSort>();
+            var historyKey = "chara" + traverse.Field("sex").GetValue<int>();
 
-            SubfolderPicker.Pick(browser, sort.selectPath, file =>
+            System.Func<string, bool> tryShow = file =>
             {
                 // The list is rebuilt when the folder changes, so read it again
                 var index = sort.cfiList.FindIndex(x => SubfolderPicker.Normalize(x.file) == SubfolderPicker.Normalize(file));
@@ -32,7 +33,10 @@ namespace RandomCardPicker
 
                 ScrollTo(sort, index, sort.cfiList.Count);
                 return true;
-            });
+            };
+
+            if (back) SubfolderPicker.Back(browser, historyKey, tryShow);
+            else SubfolderPicker.Pick(browser, historyKey, sort.selectPath, tryShow);
         }
 
         public static void UpdateStar(CharaList list, int previewIndex = -1)

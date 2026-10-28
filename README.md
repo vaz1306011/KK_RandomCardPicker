@@ -4,6 +4,7 @@ Koikatsu 的 CharaStudio 插件。在 [BrowserFolders](https://github.com/ManlyM
 
 - **角色卡**：隨機選中一張，可繼續按 Random 換卡，滿意後自己按 Load / Change 套用。
 - **場景卡**：隨機選中一張並跳出 Load / Import / Delete 面板，不喜歡可繼續按 Random。
+- **右鍵 Random**：回到上一次 Random 抽到的卡（角色卡與場景卡各自記錄，最多 100 筆）。
 
 ## 場景時長
 

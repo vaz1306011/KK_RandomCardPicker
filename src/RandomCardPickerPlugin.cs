@@ -256,7 +256,8 @@ namespace RandomCardPicker
                 {
                     try
                     {
-                        picker(instance);
+                        // Right click goes back to the previous Random pick
+                        picker(instance, Event.current.button == 1);
                     }
                     catch (System.Exception ex)
                     {
@@ -286,7 +287,7 @@ namespace RandomCardPicker
                 }
             }
 
-            private static System.Action<object> GetPicker(object instance)
+            private static System.Action<object, bool> GetPicker(object instance)
             {
                 switch (instance?.GetType().FullName)
                 {

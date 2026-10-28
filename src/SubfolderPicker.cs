@@ -15,6 +15,10 @@ namespace RandomCardPicker
     internal static class SubfolderPicker
     {
         private const int MaxTries = 30;
+        private const int MaxHistory = 100;
+
+        // Files picked by Random per list, the last one is the card Random put on screen
+        private static readonly Dictionary<string, List<string>> _history = new Dictionary<string, List<string>>();
 
         private static string _scopeRoot;
         private static string _lastPickedFolder;
@@ -53,15 +57,16 @@ namespace RandomCardPicker
         }
 
         /// <param name="browser">The BrowserFolders browser instance that owns the pressed button.</param>
+        /// <param name="historyKey">Which list the pick belongs to, <see cref="Back"/> only goes through picks with the same key.</param>
         /// <param name="selectedFile">Card currently selected in the game list, never picked again.</param>
         /// <param name="tryShow">Selects the file in the (refreshed) game list, returns false if it is not in it.</param>
         /// <param name="accept">Optional filter, files it rejects are skipped without counting as a try.</param>
-        public static void Pick(object browser, string selectedFile, Func<string, bool> tryShow, Func<string, bool> accept = null)
+        public static void Pick(object browser, string historyKey, string selectedFile, Func<string, bool> tryShow, Func<string, bool> accept = null)
         {
             var scopeRoot = GetScopeRoot(browser);
             if (scopeRoot == null) return;
 
-            var folder = Traverse.Create(Traverse.Create(browser).Property("TreeView").GetValue()).Property("CurrentFolder");
+            var folder = GetFolderProperty(browser);
 
             var selected = string.IsNullOrEmpty(selectedFile) ? null : Normalize(selectedFile);
             // Copy so tried files can be dropped without touching the cache
@@ -85,9 +90,49 @@ namespace RandomCardPicker
                 if (tryShow(file))
                 {
                     _lastPickedFolder = dir;
+                    Remember(historyKey, file);
                     return;
                 }
             }
+        }
+
+        /// <summary>Shows the pick before the current one again, dropping the current one from the history.</summary>
+        public static void Back(object browser, string historyKey, Func<string, bool> tryShow)
+        {
+            List<string> picks;
+            if (!_history.TryGetValue(historyKey, out picks)) return;
+
+            var folder = GetFolderProperty(browser);
+            // The last entry is the card on screen, the first one has nothing before it
+            while (picks.Count > 1)
+            {
+                picks.RemoveAt(picks.Count - 1);
+                var file = picks[picks.Count - 1];
+                if (!File.Exists(file)) continue;
+
+                var dir = Normalize(Path.GetDirectoryName(file));
+                if (dir != Normalize(folder.GetValue<string>())) folder.SetValue(dir);
+
+                if (tryShow(file))
+                {
+                    _lastPickedFolder = dir;
+                    return;
+                }
+            }
+        }
+
+        private static void Remember(string historyKey, string file)
+        {
+            List<string> picks;
+            if (!_history.TryGetValue(historyKey, out picks)) _history[historyKey] = picks = new List<string>();
+
+            picks.Add(file);
+            if (picks.Count > MaxHistory) picks.RemoveAt(0);
+        }
+
+        private static Traverse GetFolderProperty(object browser)
+        {
+            return Traverse.Create(Traverse.Create(browser).Property("TreeView").GetValue()).Property("CurrentFolder");
         }
 
         internal static string Normalize(string path)
